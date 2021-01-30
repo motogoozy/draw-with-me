@@ -12,13 +12,26 @@ const io = socketio(server);
 // expose static files
 app.use(express.static(path.join(__dirname, '../client', 'public')));
 
-const users = {};
-const roomUsers = {};
-const lineHistories = {};
+const connectedUsers = {}; // userID: {user}
+const roomUsers = {}; // roomID: [...users]
+const lineHistories = {}; // roomID: [...lineHistory]
+const roomTimeouts = {}; // roomID: current timer
+const restartTimer = roomID => {
+  // clear and restart room timeout
+  if (roomTimeouts[roomID]) {
+    clearTimeout(roomTimeouts[roomID]);
+  }
+  const time = 1000 * 60 * 60; // 1 hour
+  roomTimeouts[roomID] = setTimeout(() => {
+    delete roomUsers[roomID];
+    delete lineHistories[roomID];
+  }, time);
+};
 
 // client connection
 io.on('connection', socket => {
   const userID = socket.id;
+
   // handler for joining rooms
   socket.on('join room', payload => {
     const { roomID, username } = payload;
@@ -28,7 +41,7 @@ io.on('connection', socket => {
     };
 
     socket.join(roomID);
-    users[userID] = user;
+    connectedUsers[userID] = user;
     roomUsers[roomID] = roomUsers[roomID] || [];
     roomUsers[roomID].push(user);
     io.to(roomID).emit('join room', user);
@@ -39,28 +52,40 @@ io.on('connection', socket => {
     } else {
       lineHistories[roomID] = [];
     }
+
+    restartTimer(roomID);
   });
 
   // handler for message type 'draw'
   socket.on('draw', payload => {
     const { roomID, line } = payload;
-    const user = users[userID];
-    // add received line to history
-    lineHistories[roomID].push(line);
-    // send line to all clients
-    io.to(roomID).emit('draw', { line, user });
+    const user = connectedUsers[userID];
+
+    if (lineHistories.hasOwnProperty(roomID)) {
+      // add received line to history
+      lineHistories[roomID].push(line);
+      // send line to all clients
+      io.to(roomID).emit('draw', { line, user });
+    } else {
+      socket.emit('draw', { error: 'Room does not exist' });
+    }
+
+    restartTimer(roomID);
   });
 
-  // handler for joining room
-
   // handler for clearing drawing
-  socket.on('clear', () => {
-    line_history = [];
+  socket.on('clear', payload => {
+    const { roomID } = payload;
+    lineHistories[roomID] = [];
     io.emit('clear', true);
+
+    restartTimer(roomID);
   });
 
   // handler for disconnect
-  socket.on('disconnect', () => {});
+  socket.on('disconnect', () => {
+    delete connectedUsers[userID];
+  });
 });
 
 // start server

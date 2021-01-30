@@ -1,0 +1,87 @@
+.infoTab {
+  height: 100vh;
+  width: 20rem;
+  z-index: 2;
+  background-color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  position: absolute;
+  right: -20rem;
+  transition: right 0.2s ease;
+
+  .tabContainer {
+    height: 8rem;
+    width: 3rem;
+    padding: 5px 0 5px 5px;
+    overflow: hidden;
+    position: absolute;
+    left: -3rem;
+    top: calc(10% - 5px);
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-end;
+
+    .tab {
+      height: 5rem;
+      width: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background-color: white;
+      box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+      border-radius: 10px 0 0 10px;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+}
+
+.showTab {
+  right: 0;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+
+.tabContent {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+  overflow: hidden;
+}
+
+.tabMenuItem {
+  width: 100%;
+}
+
+.colorPickerContainer {
+  height: 25%;
+}
+
+.roomUsersContainer {
+  height: 75%;
+}
+
+.itemHeader {
+  height: 3rem;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background-color: rgb(102, 55, 129);
+  color: white;
+  font-size: 1.25rem;
+  position: relative;
+}
+
+.itemContent {
+  padding: 1rem;
+}

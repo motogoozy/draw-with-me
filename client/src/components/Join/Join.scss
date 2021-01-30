@@ -1,0 +1,91 @@
+.join {
+  width: 30%;
+  height: 80%;
+  min-width: 20rem;
+  max-width: 30rem;
+  min-height: 20rem;
+  max-height: 40rem;
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
+  border-radius: 10px;
+  overflow: hidden;
+
+  .join-header {
+    width: 100%;
+    height: 5rem;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    background-color: rgb(72, 157, 185);
+    color: white;
+  }
+
+  .join-content {
+    width: 100%;
+    height: calc(100% - 5rem);
+    padding-bottom: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+
+    button {
+      width: 10rem;
+      height: 3rem;
+      margin: 2rem;
+      font-size: 1.25rem;
+
+      &:hover {
+        cursor: pointer;
+      }
+    }
+
+    .room-info-container,
+    .username-container {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+
+      p {
+        margin-bottom: 0.5rem;
+      }
+
+      p:first-child {
+        font-size: 2rem;
+      }
+
+      p:nth-child(2) {
+        font-size: 1.5rem;
+        color: rgb(124, 124, 124);
+      }
+
+      input {
+        height: 1.5rem;
+        font-size: 1.25rem;
+      }
+    }
+
+    .room-info-container {
+      margin-bottom: 2rem;
+    }
+
+    .go-button {
+      position: absolute;
+      bottom: 1rem;
+    }
+
+    .back-button {
+      position: absolute;
+      top: 0;
+      left: 0;
+      margin: 0.5rem;
+      &:hover {
+        cursor: pointer;
+      }
+    }
+  }
+}
