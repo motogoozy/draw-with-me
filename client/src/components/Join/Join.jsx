@@ -5,8 +5,8 @@ import { generateID } from '../../utils';
 export default function Join() {
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
-  const [roomID, setRoomID] = useState();
-  const [username, setUsername] = useState();
+  const [roomID, setRoomID] = useState('');
+  const [username, setUsername] = useState('');
 
   const generateRoomID = () => setRoomID(generateID(4));
 
@@ -58,7 +58,13 @@ export default function Join() {
               {showCreate ? (
                 <p>{roomID}</p>
               ) : (
-                <input type='text' placeholder='Enter Room ID' onChange={e => setRoomID(e.target.value)} autoFocus />
+                <input
+                  type='text'
+                  placeholder='Enter Room ID'
+                  value={roomID}
+                  onChange={e => setRoomID(e.target.value.toUpperCase())}
+                  autoFocus
+                />
               )}
             </div>
             <div className='username-container'>
@@ -66,6 +72,7 @@ export default function Join() {
               <input
                 type='text'
                 placeholder='Enter Username'
+                value={username}
                 onChange={e => setUsername(e.target.value)}
                 autoFocus={showCreate}
               />

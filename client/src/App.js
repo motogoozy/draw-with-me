@@ -2,17 +2,11 @@ import './App.scss';
 import { useState, useEffect } from 'react';
 import Join from './components/Join/Join';
 import Canvas from './components/Canvas/Canvas';
-import InfoTab from './components/InfoTab/InfoTab';
 import queryString from 'query-string';
 
 function App() {
   const [displayJoin, setDisplayJoin] = useState(false);
   const [displayCanvas, setDisplayCanvas] = useState(false);
-  const [showInfoTab, setShowInfoTab] = useState(false);
-
-  const handleColorChange = event => {
-    console.log(event.hex);
-  };
 
   useEffect(() => {
     let queryStrings = queryString.parse(window.location.search);
@@ -30,12 +24,7 @@ function App() {
   return (
     <div className='app'>
       {displayJoin && <Join />}
-      {displayCanvas && (
-        <>
-          <Canvas />
-          <InfoTab showInfoTab={showInfoTab} setShowInfoTab={setShowInfoTab} handleColorChange={handleColorChange} />
-        </>
-      )}
+      {displayCanvas && <Canvas />}
     </div>
   );
 }

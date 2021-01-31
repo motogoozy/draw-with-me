@@ -5,17 +5,6 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  position: relative;
   overflow: hidden;
-}
-
-.canvas {
-  display: block;
-}
-
-.clear-canvas {
-  position: fixed;
-  bottom: 0;
-  right: 0;
-  margin: 0.5rem;
+  position: relative;
 }

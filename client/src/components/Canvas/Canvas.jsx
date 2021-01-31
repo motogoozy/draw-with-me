@@ -1,11 +1,25 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
+import './Canvas.scss';
 import io from 'socket.io-client';
 import queryString from 'query-string';
+import InfoTab from '../InfoTab/InfoTab';
+
+let brushColor = '#000000';
 
 export default function Canvas() {
   const socketRef = useRef();
   let queryStrings = queryString.parse(window.location.search);
   const { id: roomID, username } = queryStrings;
+  const [showInfoTab, setShowInfoTab] = useState(false);
+
+  const handleColorChange = event => (brushColor = event.hex);
+
+  const clearCanvas = () => {
+    const clearPayload = {
+      roomID,
+    };
+    socketRef.current.emit('clear', clearPayload);
+  };
 
   useEffect(() => {
     let mouse = {
@@ -14,7 +28,7 @@ export default function Canvas() {
       position: { x: 0, y: 0 },
       prevPosition: false,
     };
-    // const roomID = generateID(16);
+
     const joinPayload = {
       roomID,
       username,
@@ -48,11 +62,11 @@ export default function Canvas() {
         console.log(data.error);
         window.location.search = '';
       } else {
-        const { line } = data;
-        context.strokeStyle = '#FF0000';
+        const { coordinates, color } = data;
+        context.strokeStyle = color;
         context.beginPath();
-        context.moveTo(line[0].x * width, line[0].y * height);
-        context.lineTo(line[1].x * width, line[1].y * height);
+        context.moveTo(coordinates[0].x * width, coordinates[0].y * height);
+        context.lineTo(coordinates[1].x * width, coordinates[1].y * height);
         context.stroke();
       }
     });
@@ -77,11 +91,12 @@ export default function Canvas() {
       // check if the use is drawing
       if (mouse.click && mouse.move && mouse.prevPosition) {
         // send line to the server
-        const drawPayload = {
+        const lineData = {
+          coordinates: [mouse.position, mouse.prevPosition],
+          color: brushColor,
           roomID,
-          line: [mouse.position, mouse.prevPosition],
         };
-        socketRef.current.emit('draw', drawPayload);
+        socketRef.current.emit('draw', lineData);
         mouse.move = false;
       }
       mouse.prevPosition = { x: mouse.position.x, y: mouse.position.y };
@@ -90,15 +105,12 @@ export default function Canvas() {
     setInterval(main, 25);
   }, [roomID, username]);
 
-  function clearCanvas() {
-    const clearPayload = {
-      roomID,
-    };
-    socketRef.current.emit('clear', clearPayload);
-  }
   return (
     <div className='canvas-container'>
       <canvas id='drawing' className='canvas'></canvas>
+
+      <InfoTab showInfoTab={showInfoTab} setShowInfoTab={setShowInfoTab} handleColorChange={handleColorChange} />
+
       <button className='clear-canvas' onClick={clearCanvas}>
         Clear
       </button>

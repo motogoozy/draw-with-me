@@ -48,7 +48,7 @@ io.on('connection', socket => {
 
     if (lineHistories[roomID]) {
       // send the history to the new client
-      lineHistories[roomID].forEach(line => socket.emit('draw', { line }));
+      lineHistories[roomID].forEach(line => socket.emit('draw', { ...line }));
     } else {
       lineHistories[roomID] = [];
     }
@@ -57,15 +57,14 @@ io.on('connection', socket => {
   });
 
   // handler for message type 'draw'
-  socket.on('draw', payload => {
-    const { roomID, line } = payload;
-    const user = connectedUsers[userID];
+  socket.on('draw', lineData => {
+    const { roomID } = lineData;
 
     if (lineHistories.hasOwnProperty(roomID)) {
       // add received line to history
-      lineHistories[roomID].push(line);
+      lineHistories[roomID].push(lineData);
       // send line to all clients
-      io.to(roomID).emit('draw', { line, user });
+      io.to(roomID).emit('draw', lineData);
     } else {
       socket.emit('draw', { error: 'Room does not exist' });
     }
