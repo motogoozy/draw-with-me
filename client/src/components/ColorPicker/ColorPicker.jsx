@@ -18,6 +18,7 @@ export default class ColorPicker extends Component {
           <CirclePicker
             onChange={e => this.props.handleColorChange(e)}
             colors={[
+              '#000000',
               '#f44336',
               '#e91e63',
               '#9c27b0',
@@ -27,6 +28,7 @@ export default class ColorPicker extends Component {
               '#03a9f4',
               '#00bcd4',
               '#009688',
+              '#196919',
               '#4caf50',
               '#8bc34a',
               '#ffeb3b',
@@ -34,8 +36,6 @@ export default class ColorPicker extends Component {
               '#ff9800',
               '#ff5722',
               '#795548',
-              '#607d8b',
-              '#000000',
             ]}
           />
         </div>
