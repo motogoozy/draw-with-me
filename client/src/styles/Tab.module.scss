@@ -1,4 +1,4 @@
-.infoTab {
+.Tab {
   height: 100vh;
   width: 20rem;
   z-index: 2;
@@ -9,23 +9,22 @@
   align-items: center;
   position: absolute;
   right: -20rem;
-  transition: right 0.2s ease;
+  transition: right 0.2s, z-index 0.1s;
 
   .tabContainer {
-    height: 8rem;
+    height: 5rem;
     width: 3rem;
     padding: 5px 0 5px 5px;
     overflow: hidden;
     position: absolute;
     left: -3rem;
-    top: calc(10% - 5px);
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-end;
 
     .tab {
-      height: 5rem;
+      height: 100%;
       width: 2rem;
       display: flex;
       flex-direction: column;
@@ -43,6 +42,7 @@
 }
 
 .showTab {
+  z-index: 3;
   right: 0;
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
 }
@@ -59,14 +59,6 @@
 
 .tabMenuItem {
   width: 100%;
-}
-
-.colorPickerContainer {
-  height: 25%;
-}
-
-.roomUsersContainer {
-  height: 75%;
 }
 
 .itemHeader {

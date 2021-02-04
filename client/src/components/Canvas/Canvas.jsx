@@ -2,7 +2,10 @@ import React, { useState, useEffect, useRef } from 'react';
 import './Canvas.scss';
 import io from 'socket.io-client';
 import queryString from 'query-string';
-import InfoTab from '../InfoTab/InfoTab';
+import BrushTab from '../BrushTab/BrushTab';
+import ChatTab from '../ChatTab/ChatTab';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEraser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
 let brushColor = '#000000';
 
@@ -10,7 +13,8 @@ export default function Canvas() {
   const socketRef = useRef();
   let queryStrings = queryString.parse(window.location.search);
   const { id: roomID, username } = queryStrings;
-  const [showInfoTab, setShowInfoTab] = useState(false);
+  const [showBrushTab, setShowBrushTab] = useState(false);
+  const [showChatTab, setShowChatTab] = useState(false);
 
   const handleColorChange = event => (brushColor = event.hex);
 
@@ -109,10 +113,16 @@ export default function Canvas() {
     <div className='canvas-container'>
       <canvas id='drawing' className='canvas'></canvas>
 
-      <InfoTab showInfoTab={showInfoTab} setShowInfoTab={setShowInfoTab} handleColorChange={handleColorChange} />
+      <BrushTab showBrushTab={showBrushTab} setShowBrushTab={setShowBrushTab} handleColorChange={handleColorChange} />
+
+      <ChatTab showChatTab={showChatTab} setShowChatTab={setShowChatTab} />
+
+      <button className='leave-button' onClick={() => (window.location.search = '')}>
+        <FontAwesomeIcon icon={faSignOutAlt} />
+      </button>
 
       <button className='clear-canvas' onClick={clearCanvas}>
-        Clear
+        <FontAwesomeIcon icon={faEraser} />
       </button>
     </div>
   );

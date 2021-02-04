@@ -13,9 +13,37 @@
   display: block;
 }
 
+.leave-button {
+  width: 2rem;
+  height: 1.5rem;
+  position: fixed;
+  top: 0;
+  left: 0;
+  margin: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #663781;
+  outline: none;
+  transform: scale(-1, 1);
+
+  &:hover {
+    cursor: pointer;
+    background-color: rgba(102, 55, 129, 0.25);
+  }
+}
+
 .clear-canvas {
+  width: 2rem;
+  height: 1.5rem;
   position: fixed;
   bottom: 0;
   right: 0;
   margin: 0.5rem;
+  border-radius: 5px;
+  border: 1px solid #663781;
+  outline: none;
+
+  &:hover {
+    cursor: pointer;
+    background-color: rgba(102, 55, 129, 0.25);
+  }
 }
