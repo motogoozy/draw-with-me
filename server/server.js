@@ -13,18 +13,15 @@ const io = socketio(server);
 app.use(express.static(path.join(__dirname, '../client', 'public')));
 
 const connectedUsers = {}; // userID: {user}
-const roomUsers = {}; // roomID: [...users]
-const lineHistories = {}; // roomID: [...lineHistory]
-const roomTimeouts = {}; // roomID: current timer
+const rooms = {}; // keyed by roomID, values are objects with users, lineHistory, chatHistory, timeouts;
 const restartTimer = roomID => {
   // clear and restart room timeout
-  if (roomTimeouts[roomID]) {
-    clearTimeout(roomTimeouts[roomID]);
+  if (rooms[roomID].timeout) {
+    clearTimeout(rooms[roomID].timeout);
   }
   const time = 1000 * 60 * 60; // 1 hour
-  roomTimeouts[roomID] = setTimeout(() => {
-    delete roomUsers[roomID];
-    delete lineHistories[roomID];
+  rooms[roomID].timeout = setTimeout(() => {
+    delete rooms[roomID];
   }, time);
 };
 
@@ -42,27 +39,31 @@ io.on('connection', socket => {
 
     socket.join(roomID);
     connectedUsers[userID] = user;
-    roomUsers[roomID] = roomUsers[roomID] || [];
-    roomUsers[roomID].push(user);
+    rooms[roomID] = rooms[roomID] || {};
+    rooms[roomID].users = rooms[roomID].users || [];
+    rooms[roomID].users.push(user);
+    rooms[roomID].lineHistory = rooms[roomID].lineHistory || [];
+    rooms[roomID].chatHistory = rooms[roomID].chatHistory || [];
     io.to(roomID).emit('join room', user);
 
-    if (lineHistories[roomID]) {
-      // send the history to the new client
-      lineHistories[roomID].forEach(line => socket.emit('draw', { ...line }));
-    } else {
-      lineHistories[roomID] = [];
+    // send line & chat histories to the new client
+    if (rooms[roomID].lineHistory.length > 0) {
+      rooms[roomID].lineHistory.forEach(line => socket.emit('draw', line));
+    }
+    if (rooms[roomID].chatHistory.length > 0) {
+      rooms[roomID].chatHistory.forEach(msg => socket.emit('chat', msg));
     }
 
     restartTimer(roomID);
   });
 
-  // handler for message type 'draw'
+  // handler for draw
   socket.on('draw', lineData => {
     const { roomID } = lineData;
 
-    if (lineHistories.hasOwnProperty(roomID)) {
+    if (rooms[roomID]) {
       // add received line to history
-      lineHistories[roomID].push(lineData);
+      rooms[roomID].lineHistory.push(lineData);
       // send line to all clients
       io.to(roomID).emit('draw', lineData);
     } else {
@@ -72,10 +73,24 @@ io.on('connection', socket => {
     restartTimer(roomID);
   });
 
+  // handler for chat
+  socket.on('chat', msgData => {
+    const { roomID } = msgData;
+
+    if (rooms[roomID]) {
+      // add message to history
+      rooms[roomID].chatHistory.push(msgData);
+      // send msg to all clients
+      io.to(roomID).emit('chat', msgData);
+    }
+
+    restartTimer(roomID);
+  });
+
   // handler for clearing drawing
   socket.on('clear', payload => {
     const { roomID } = payload;
-    lineHistories[roomID] = [];
+    rooms[roomID].lineHistory = [];
     io.emit('clear', true);
 
     restartTimer(roomID);
