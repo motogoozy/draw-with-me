@@ -60,6 +60,23 @@ export default function Canvas() {
       mouse.move = true;
     };
 
+    // register touch event handlers
+    canvas.ontouchstart = e => {
+      mouse.position.x = e.touches[0].clientX / width;
+      mouse.position.y = e.touches[0].clientY / height;
+      mouse.move = false;
+      mouse.click = true;
+    };
+    canvas.ontouchend = e => {
+      mouse.click = false;
+    };
+    canvas.ontouchmove = e => {
+      // normalize mouse position to range 0.0 - 1.0
+      mouse.position.x = e.touches[0].clientX / width;
+      mouse.position.y = e.touches[0].clientY / height;
+      mouse.move = true;
+    };
+
     // draw line received from server
     socketRef.current.on('draw', data => {
       if (data.error) {
@@ -89,6 +106,12 @@ export default function Canvas() {
       context.clearRect(0, 0, width, height);
       console.log('canvas cleared');
     });
+
+    //TODO undo last draw
+    socketRef.current.on('undo', () => {});
+
+    //TODO chat
+    socketRef.current.on('chat', () => {});
 
     // main loop, running every 25ms
     function main() {
