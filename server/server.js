@@ -58,14 +58,14 @@ io.on('connection', socket => {
   });
 
   // handler for draw
-  socket.on('draw', lineData => {
-    const { roomID } = lineData;
+  socket.on('draw', linePayload => {
+    const { roomID } = linePayload;
 
     if (rooms[roomID]) {
       // add received line to history
-      rooms[roomID].lineHistory.push(lineData);
+      rooms[roomID].lineHistory.push(linePayload);
       // send line to all clients
-      io.to(roomID).emit('draw', lineData);
+      io.to(roomID).emit('draw', linePayload);
     } else {
       socket.emit('draw', { error: 'Room does not exist' });
     }
@@ -74,22 +74,21 @@ io.on('connection', socket => {
   });
 
   // handler for chat
-  socket.on('chat', msgData => {
-    const { roomID } = msgData;
+  socket.on('chat', messagePayload => {
+    const { roomID } = messagePayload;
 
     if (rooms[roomID]) {
       // add message to history
-      rooms[roomID].chatHistory.push(msgData);
+      rooms[roomID].chatHistory.push(messagePayload);
       // send msg to all clients
-      io.to(roomID).emit('chat', msgData);
+      io.to(roomID).emit('chat', messagePayload);
     }
 
     restartTimer(roomID);
   });
 
   // handler for clearing drawing
-  socket.on('clear', payload => {
-    const { roomID } = payload;
+  socket.on('clear', roomID => {
     rooms[roomID].lineHistory = [];
     io.emit('clear', true);
 

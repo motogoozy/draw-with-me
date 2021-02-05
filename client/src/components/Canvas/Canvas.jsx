@@ -7,22 +7,27 @@ import ChatTab from '../ChatTab/ChatTab';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEraser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 
-let brushColor = '#000000';
-
 export default function Canvas() {
   const socketRef = useRef();
+  const brushRef = useRef({ color: '#000000' });
   let queryStrings = queryString.parse(window.location.search);
   const { id: roomID, username } = queryStrings;
   const [showBrushTab, setShowBrushTab] = useState(false);
   const [showChatTab, setShowChatTab] = useState(false);
+  const [messages, setMessages] = useState([]);
 
-  const handleColorChange = event => (brushColor = event.hex);
+  const handleColorChange = event => (brushRef.current.color = event.hex);
 
-  const clearCanvas = () => {
-    const clearPayload = {
+  const clearCanvas = () => socketRef.current.emit('clear', roomID);
+
+  const sendMessage = message => {
+    const messagePayload = {
       roomID,
+      username,
+      message,
     };
-    socketRef.current.emit('clear', clearPayload);
+
+    socketRef.current.emit('chat', messagePayload);
   };
 
   useEffect(() => {
@@ -111,7 +116,9 @@ export default function Canvas() {
     socketRef.current.on('undo', () => {});
 
     //TODO chat
-    socketRef.current.on('chat', () => {});
+    socketRef.current.on('chat', newMessage => {
+      setMessages(prev => [...prev, newMessage]);
+    });
 
     // main loop, running every 25ms
     function main() {
@@ -120,7 +127,7 @@ export default function Canvas() {
         // send line to the server
         const lineData = {
           coordinates: [mouse.position, mouse.prevPosition],
-          color: brushColor,
+          color: brushRef.current.color,
           roomID,
         };
         socketRef.current.emit('draw', lineData);
@@ -138,7 +145,13 @@ export default function Canvas() {
 
       <BrushTab showBrushTab={showBrushTab} setShowBrushTab={setShowBrushTab} handleColorChange={handleColorChange} />
 
-      <ChatTab showChatTab={showChatTab} setShowChatTab={setShowChatTab} />
+      <ChatTab
+        showChatTab={showChatTab}
+        setShowChatTab={setShowChatTab}
+        messages={messages}
+        sendMessage={sendMessage}
+        currentUser={username}
+      />
 
       <button className='leave-button' onClick={() => (window.location.search = '')}>
         <FontAwesomeIcon icon={faSignOutAlt} />

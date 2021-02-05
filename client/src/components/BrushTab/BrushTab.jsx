@@ -21,7 +21,7 @@ export default function BrushTab(props) {
       </div>
 
       <div className={TabStyles.tabContent}>
-        <div className={classnames(TabStyles.tabMenuItem, styles.colorPickerContainer)}>
+        <div className={classnames(styles.colorPickerContainer)}>
           <div className={TabStyles.itemHeader}>Color</div>
           <div className={TabStyles.itemContent}>
             <ColorPicker handleColorChange={handleColorChange} />

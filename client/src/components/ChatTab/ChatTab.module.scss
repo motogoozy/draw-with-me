@@ -1,3 +1,51 @@
 .chatTabContainer {
   top: calc(10rem + 5.5rem);
 }
+
+.chatContainer {
+  width: 100%;
+  height: calc(100% - 3rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+
+  .messageContainer {
+    height: calc(100% - 7rem);
+    width: 100%;
+    padding: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    overflow-y: scroll;
+    overflow-x: hidden;
+  }
+
+  .chatInputContainer {
+    height: 6rem;
+    width: 100%;
+    margin-top: 1rem;
+
+    textarea {
+      height: 4rem;
+      width: 100%;
+      resize: none;
+      padding: 0.25rem;
+    }
+
+    button {
+      height: 1.5rem;
+      width: 3rem;
+      margin: 0.25rem 0 0.25rem 0;
+      border: 1px solid #663781;
+      border-radius: 5px;
+      outline: none;
+
+      &:hover {
+        cursor: pointer;
+        background-color: rgba(102, 55, 129, 0.25);
+      }
+    }
+  }
+}
