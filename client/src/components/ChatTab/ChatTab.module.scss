@@ -31,7 +31,16 @@
       height: 4rem;
       width: 100%;
       resize: none;
-      padding: 0.25rem;
+      padding: 0.5rem;
+      border-radius: 5px;
+      border: 2px solid #808080;
+      font-family: inherit;
+      font-size: 1rem;
+
+      &:focus {
+        outline: none !important;
+        border: 2px solid #663781;
+      }
     }
 
     button {

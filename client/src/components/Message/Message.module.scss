@@ -2,6 +2,7 @@
   width: 100%;
   height: auto;
   margin-bottom: 1rem;
+  padding-right: 3rem;
 }
 
 .username {
@@ -12,14 +13,20 @@
 
 .message {
   width: auto;
-  background-color: white;
-  border: 1px solid gray;
-  border-radius: 5px;
-  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.16), 0 3px 6px rgba(0, 0, 0, 0.23);
-  padding: 0.25rem;
+  background-color: #e5e5ea;
+  border: 1px solid #cacaca;
+  border-radius: 12px 12px;
+  box-shadow: 0 1.5px 3px rgba(0, 0, 0, 0.16), 0 1.5px 3px rgba(0, 0, 0, 0.158);
+  padding: 0.5rem;
   word-wrap: break-word;
 }
 
 .isAuthor {
-  background-color: rgb(197, 197, 197);
+  background-color: #0a80fe;
+  color: white;
+}
+
+.padLeft {
+  padding-right: 0;
+  padding-left: 3rem;
 }

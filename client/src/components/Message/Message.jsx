@@ -4,17 +4,18 @@ import classnames from 'classnames';
 
 export default function Message(props) {
   const { username, message, currentUser } = props;
-  console.log(username, currentUser);
 
   const messageStyles = {
-    [styles.isAuthor]: currentUser === username,
+    [styles.isAuthor]: username === currentUser,
   };
 
-  const displayName = currentUser === username ? `${username} (Me)` : username;
+  const containerStyles = {
+    [styles.padLeft]: username === currentUser,
+  };
 
   return (
-    <div className={styles.container}>
-      <p className={styles.username}>{displayName}</p>
+    <div className={classnames(styles.container, containerStyles)}>
+      {username !== currentUser && <p className={styles.username}>{username}</p>}
       <p className={classnames(styles.message, messageStyles)}>{message}</p>
     </div>
   );
