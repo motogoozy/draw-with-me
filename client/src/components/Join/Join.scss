@@ -36,9 +36,12 @@
       height: 3rem;
       margin: 2rem;
       font-size: 1.25rem;
+      border: 1px solid #663781;
+      border-radius: 5px;
 
       &:hover {
         cursor: pointer;
+        background-color: rgba(102, 55, 129, 0.25);
       }
     }
 
@@ -64,8 +67,15 @@
       }
 
       input {
-        height: 1.5rem;
         font-size: 1.25rem;
+        border-radius: 5px;
+        padding: 0.25rem;
+        border: 2px solid #808080;
+
+        &:focus {
+          outline: none !important;
+          border: 2px solid #663781;
+        }
       }
     }
 
