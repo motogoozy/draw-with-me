@@ -5,7 +5,8 @@ import queryString from 'query-string';
 import BrushTab from '../BrushTab/BrushTab';
 import ChatTab from '../ChatTab/ChatTab';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEraser, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 
 export default function Canvas() {
   const socketRef = useRef();
@@ -16,7 +17,9 @@ export default function Canvas() {
   const [showChatTab, setShowChatTab] = useState(false);
   const [messages, setMessages] = useState([]);
 
-  const handleColorChange = event => (brushRef.current.color = event.hex);
+  const handleColorChange = event => {
+    brushRef.current.color = event.hex;
+  };
 
   const clearCanvas = () => socketRef.current.emit('clear', roomID);
 
@@ -158,7 +161,7 @@ export default function Canvas() {
       </button>
 
       <button className='clear-canvas' onClick={clearCanvas}>
-        <FontAwesomeIcon icon={faEraser} />
+        <FontAwesomeIcon icon={faTrashAlt} />
       </button>
     </div>
   );
