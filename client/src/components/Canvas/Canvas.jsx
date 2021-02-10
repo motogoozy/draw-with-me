@@ -115,13 +115,12 @@ export default function Canvas() {
       console.log('canvas cleared');
     });
 
-    //TODO undo last draw
-    socketRef.current.on('undo', () => {});
-
-    //TODO chat
     socketRef.current.on('chat', newMessage => {
       setMessages(prev => [...prev, newMessage]);
     });
+
+    //TODO undo last draw
+    socketRef.current.on('undo', () => {});
 
     // main loop, running every 25ms
     function main() {
