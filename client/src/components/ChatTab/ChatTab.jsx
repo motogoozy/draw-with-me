@@ -42,7 +42,10 @@ export default function ChatTab(props) {
         <div className={TabStyles.itemHeader}>Chat</div>
         <div className={classnames(TabStyles.itemContent, styles.chatContainer)}>
           <div className={styles.messageContainer} ref={messagesRef}>
-            {messages && messages.map(message => <Message {...message} currentUser={currentUser} />)}
+            {messages &&
+              messages.map((message, idx) => (
+                <Message key={idx + message.username} {...message} currentUser={currentUser} />
+              ))}
           </div>
           <div className={styles.chatInputContainer}>
             <textarea
