@@ -10,7 +10,7 @@ import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 
 export default function Canvas() {
   const socketRef = useRef();
-  const brushRef = useRef({ color: '#000000' });
+  const brushRef = useRef({ color: '#000000', size: 3 });
   let queryStrings = queryString.parse(window.location.search);
   const { id: roomID, username } = queryStrings;
   const [showBrushTab, setShowBrushTab] = useState(false);
@@ -86,13 +86,16 @@ export default function Canvas() {
     };
 
     // draw line received from server
-    socketRef.current.on('draw', data => {
-      if (data.error) {
-        console.log(data.error);
+    socketRef.current.on('draw', lineData => {
+      if (lineData.error) {
+        console.log(lineData.error);
         window.location.search = '';
       } else {
-        const { coordinates, color } = data;
+        const { coordinates, color, size } = lineData;
         context.strokeStyle = color;
+        context.lineWidth = size;
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
         context.beginPath();
         context.moveTo(coordinates[0].x * width, coordinates[0].y * height);
         context.lineTo(coordinates[1].x * width, coordinates[1].y * height);
@@ -130,6 +133,7 @@ export default function Canvas() {
         const lineData = {
           coordinates: [mouse.position, mouse.prevPosition],
           color: brushRef.current.color,
+          size: brushRef.current.size,
           roomID,
         };
         socketRef.current.emit('draw', lineData);
