@@ -39,7 +39,9 @@ export default function ChatTab(props) {
       </div>
 
       <div className={TabStyles.tabContent}>
-        <div className={TabStyles.itemHeader}>Chat</div>
+        <div className={TabStyles.itemHeader} style={{ backgroundColor: '#663781', color: 'white' }}>
+          Chat
+        </div>
         <div className={classnames(TabStyles.itemContent, styles.chatContainer)}>
           <div className={styles.messageContainer} ref={messagesRef}>
             {messages &&

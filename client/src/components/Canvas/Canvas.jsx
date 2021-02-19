@@ -10,15 +10,23 @@ import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 
 export default function Canvas() {
   const socketRef = useRef();
-  const brushRef = useRef({ color: '#000000', size: 3 });
+  const brushRef = useRef({ color: '#000000', size: 5 });
   let queryStrings = queryString.parse(window.location.search);
   const { id: roomID, username } = queryStrings;
   const [showBrushTab, setShowBrushTab] = useState(false);
   const [showChatTab, setShowChatTab] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [currentColor, setCurrentColor] = useState(brushRef.current.color);
+  const [currentBrushSize, setCurrentBrushSize] = useState(brushRef.current.size);
 
   const handleColorChange = event => {
     brushRef.current.color = event.hex;
+    setCurrentColor(event.hex);
+  };
+
+  const handleBrushSizeChange = event => {
+    brushRef.current.size = event.target.value;
+    setCurrentBrushSize(event.target.value);
   };
 
   const clearCanvas = () => socketRef.current.emit('clear', roomID);
@@ -32,6 +40,10 @@ export default function Canvas() {
 
     socketRef.current.emit('chat', messagePayload);
   };
+
+  useEffect(() => {
+    setCurrentBrushSize(brushRef.current.size);
+  }, [brushRef.current.size]);
 
   useEffect(() => {
     let mouse = {
@@ -149,7 +161,14 @@ export default function Canvas() {
     <div className='canvas-container'>
       <canvas id='drawing' className='canvas'></canvas>
 
-      <BrushTab showBrushTab={showBrushTab} setShowBrushTab={setShowBrushTab} handleColorChange={handleColorChange} />
+      <BrushTab
+        showBrushTab={showBrushTab}
+        setShowBrushTab={setShowBrushTab}
+        handleColorChange={handleColorChange}
+        handleBrushSizeChange={handleBrushSizeChange}
+        currentColor={currentColor}
+        currentBrushSize={currentBrushSize}
+      />
 
       <ChatTab
         showChatTab={showChatTab}
