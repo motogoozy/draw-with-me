@@ -9,9 +9,14 @@ const app = express();
 const server = http.createServer(app);
 const io = socketio(server);
 
-// expose static files
-app.use(express.static(path.join(__dirname, '../client', 'public')));
+// environment
+const PORT = process.env.PORT || 4000;
+const BUILD_DIR = path.join(__dirname, '../client', 'build')
 
+// expose static files
+app.use(express.static(BUILD_DIR));
+
+// SOCKETS
 const connectedUsers = {}; // userID: {user}
 const rooms = {}; // keyed by roomID, values are objects with users, lineHistory, chatHistory, timeouts;
 const restartTimer = roomID => {
@@ -101,6 +106,21 @@ io.on('connection', socket => {
   });
 });
 
+// return SPA entry point
+app.get('/', (req, res) => {
+  res.sendFile(path.join(BUILD_DIR, 'index.html'), (err) => console.log(err));
+})
+
+// error handler
+app.use((err, req, res, next) => {
+  if (!err) {
+    next();
+  } else {
+    let statusCode = err.statusCode || 500;
+    let message = err.message || 'Unknown error';
+    res.status(statusCode).send(message);
+  }
+})
+
 // start server
-const PORT = process.env.PORT || 4000;
 server.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
