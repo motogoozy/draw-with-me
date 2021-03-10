@@ -64,12 +64,16 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: #663781;
-  color: white;
   font-size: 1.25rem;
   position: relative;
 }
 
 .itemContent {
   padding: 1rem;
+  width: 100%;
+  height: calc(100% - 3rem);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
 }

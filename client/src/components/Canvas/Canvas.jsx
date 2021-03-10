@@ -10,15 +10,23 @@ import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 
 export default function Canvas() {
   const socketRef = useRef();
-  const brushRef = useRef({ color: '#000000' });
+  const brushRef = useRef({ color: '#000000', size: 5 });
   let queryStrings = queryString.parse(window.location.search);
   const { id: roomID, username } = queryStrings;
   const [showBrushTab, setShowBrushTab] = useState(false);
   const [showChatTab, setShowChatTab] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [currentColor, setCurrentColor] = useState(brushRef.current.color);
+  const [currentBrushSize, setCurrentBrushSize] = useState(brushRef.current.size);
 
   const handleColorChange = event => {
     brushRef.current.color = event.hex;
+    setCurrentColor(event.hex);
+  };
+
+  const handleBrushSizeChange = event => {
+    brushRef.current.size = event.target.value;
+    setCurrentBrushSize(event.target.value);
   };
 
   const clearCanvas = () => socketRef.current.emit('clear', roomID);
@@ -32,6 +40,10 @@ export default function Canvas() {
 
     socketRef.current.emit('chat', messagePayload);
   };
+
+  useEffect(() => {
+    setCurrentBrushSize(brushRef.current.size);
+  }, [brushRef.current.size]);
 
   useEffect(() => {
     let mouse = {
@@ -86,13 +98,16 @@ export default function Canvas() {
     };
 
     // draw line received from server
-    socketRef.current.on('draw', data => {
-      if (data.error) {
-        console.log(data.error);
+    socketRef.current.on('draw', lineData => {
+      if (lineData.error) {
+        console.log(lineData.error);
         window.location.search = '';
       } else {
-        const { coordinates, color } = data;
+        const { coordinates, color, size } = lineData;
         context.strokeStyle = color;
+        context.lineWidth = size;
+        context.lineCap = 'round';
+        context.lineJoin = 'round';
         context.beginPath();
         context.moveTo(coordinates[0].x * width, coordinates[0].y * height);
         context.lineTo(coordinates[1].x * width, coordinates[1].y * height);
@@ -130,6 +145,7 @@ export default function Canvas() {
         const lineData = {
           coordinates: [mouse.position, mouse.prevPosition],
           color: brushRef.current.color,
+          size: brushRef.current.size,
           roomID,
         };
         socketRef.current.emit('draw', lineData);
@@ -145,7 +161,14 @@ export default function Canvas() {
     <div className='canvas-container'>
       <canvas id='drawing' className='canvas'></canvas>
 
-      <BrushTab showBrushTab={showBrushTab} setShowBrushTab={setShowBrushTab} handleColorChange={handleColorChange} />
+      <BrushTab
+        showBrushTab={showBrushTab}
+        setShowBrushTab={setShowBrushTab}
+        handleColorChange={handleColorChange}
+        handleBrushSizeChange={handleBrushSizeChange}
+        currentColor={currentColor}
+        currentBrushSize={currentBrushSize}
+      />
 
       <ChatTab
         showChatTab={showChatTab}
