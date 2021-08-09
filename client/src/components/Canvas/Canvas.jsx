@@ -7,6 +7,7 @@ import ChatTab from '../ChatTab/ChatTab';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
+import { EVENTS } from '../../constants.js';
 
 export default function Canvas() {
   const socketRef = useRef();
@@ -29,7 +30,7 @@ export default function Canvas() {
     setCurrentBrushSize(event.target.value);
   };
 
-  const clearCanvas = () => socketRef.current.emit('clear', roomID);
+  const clearCanvas = () => socketRef.current.emit(EVENTS.CLEAR, roomID);
 
   const sendMessage = message => {
     const messagePayload = {
@@ -38,7 +39,7 @@ export default function Canvas() {
       message,
     };
 
-    socketRef.current.emit('chat', messagePayload);
+    socketRef.current.emit(EVENTS.CHAT, messagePayload);
   };
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export default function Canvas() {
 
     // connect to socket, get canvas element, and create context
     socketRef.current = io.connect('/');
-    socketRef.current.emit('join room', joinPayload);
+    socketRef.current.emit(EVENTS.JOIN, joinPayload);
     let canvas = document.getElementById('drawing');
     let context = canvas.getContext('2d');
     let width = window.innerWidth;
@@ -98,7 +99,7 @@ export default function Canvas() {
     };
 
     // draw line received from server
-    socketRef.current.on('draw', lineData => {
+    socketRef.current.on(EVENTS.DRAW, lineData => {
       if (lineData.error) {
         console.log(lineData.error);
         window.location.search = '';
@@ -116,26 +117,36 @@ export default function Canvas() {
     });
 
     // alert when user joins room
-    socketRef.current.on('join room', newUser => {
+    socketRef.current.on(EVENTS.JOIN, newUser => {
       if (newUser.username === username) {
         console.log(`Welcome, ${username}!`);
       } else {
-        console.log(`${newUser.username} has joined the room!`);
+        console.log(`${newUser.username} has joined the room`);
       }
     });
 
+    socketRef.current.on(EVENTS.LEAVE, username => {
+      console.log(`${username} has left the room`);
+    });
+
     // clear canvas
-    socketRef.current.on('clear', () => {
+    socketRef.current.on(EVENTS.CLEAR, () => {
       context.clearRect(0, 0, width, height);
       console.log('canvas cleared');
     });
 
-    socketRef.current.on('chat', newMessage => {
+    // receive chat message
+    socketRef.current.on(EVENTS.CHAT, newMessage => {
       setMessages(prev => [...prev, newMessage]);
     });
 
-    //TODO undo last draw
-    socketRef.current.on('undo', () => {});
+    // close room
+    socketRef.current.on(EVENTS.CLOSE, () => {
+      console.log('room has been closed');
+    });
+
+    // TODO: undo last draw
+    socketRef.current.on(EVENTS.UNDO, () => {});
 
     // main loop, running every 25ms
     function main() {
@@ -148,7 +159,7 @@ export default function Canvas() {
           size: brushRef.current.size,
           roomID,
         };
-        socketRef.current.emit('draw', lineData);
+        socketRef.current.emit(EVENTS.DRAW, lineData);
         mouse.move = false;
       }
       mouse.prevPosition = { x: mouse.position.x, y: mouse.position.y };

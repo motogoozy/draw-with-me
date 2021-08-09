@@ -3,6 +3,7 @@ const http = require('http');
 const express = require('express');
 const socketio = require('socket.io');
 require('dotenv').config();
+const { EVENTS } = require(path.join(__dirname, '../client', '/src', 'constants.js'));
 
 // create server
 const app = express();
@@ -11,105 +12,114 @@ const io = socketio(server);
 
 // environment
 const PORT = process.env.PORT || 4000;
-const BUILD_DIR = path.join(__dirname, '../client', 'build')
+const BUILD_DIR = path.join(__dirname, '../client', 'build');
 
 // expose static files
 app.use(express.static(BUILD_DIR));
 
 // SOCKETS
-const connectedUsers = {}; // userID: {user}
-const rooms = {}; // keyed by roomID, values are objects with users, lineHistory, chatHistory, timeouts;
-const restartTimer = roomID => {
+const connectedUsers = {}; // { id: {user} }
+const rooms = {}; // { id: { id, users: [], lineHistory: [], chatHistory: [], timeout }}
+
+const _restartTimer = roomID => {
   // clear and restart room timeout
-  if (rooms[roomID].timeout) {
+  if (rooms[roomID].hasOwnProperty('timeout')) {
     clearTimeout(rooms[roomID].timeout);
   }
   const time = 1000 * 60 * 60; // 1 hour
   rooms[roomID].timeout = setTimeout(() => {
+    io.in(roomID).emit(EVENTS.CLOSE);
     delete rooms[roomID];
   }, time);
 };
 
-// client connection
-io.on('connection', socket => {
-  const userID = socket.id;
+const _getRoom = id => {
+  if (rooms[id]) return rooms[id];
+  return {
+    id,
+    users: [],
+    lineHistory: [],
+    chatHistory: [],
+  };
+};
 
-  // handler for joining rooms
-  socket.on('join room', payload => {
+// client connection
+io.on(EVENTS.CONNECTION, socket => {
+  const { id } = socket;
+
+  // handle room join
+  socket.on(EVENTS.JOIN, payload => {
     const { roomID, username } = payload;
-    const user = {
-      id: userID,
-      username,
-    };
+    const user = { id, username };
 
     socket.join(roomID);
-    connectedUsers[userID] = user;
-    rooms[roomID] = rooms[roomID] || {};
-    rooms[roomID].users = rooms[roomID].users || [];
-    rooms[roomID].users.push(user);
-    rooms[roomID].lineHistory = rooms[roomID].lineHistory || [];
-    rooms[roomID].chatHistory = rooms[roomID].chatHistory || [];
-    io.to(roomID).emit('join room', user);
+    connectedUsers[id] = user;
+    const room = _getRoom(roomID); // join existing room or create one
+    room.users.push(user);
+    io.in(roomID).emit(EVENTS.JOIN, user);
 
     // send line & chat histories to the new client
-    if (rooms[roomID].lineHistory.length > 0) {
-      rooms[roomID].lineHistory.forEach(line => socket.emit('draw', line));
+    if (room.lineHistory.length > 0) {
+      room.lineHistory.forEach(line => socket.emit(EVENTS.DRAW, line));
     }
-    if (rooms[roomID].chatHistory.length > 0) {
-      rooms[roomID].chatHistory.forEach(msg => socket.emit('chat', msg));
+    if (room.chatHistory.length > 0) {
+      room.chatHistory.forEach(msg => socket.emit(EVENTS.CHAT, msg));
     }
 
-    restartTimer(roomID);
+    rooms[roomID] = room;
+    _restartTimer(roomID);
   });
 
-  // handler for draw
-  socket.on('draw', linePayload => {
+  // handle draw
+  socket.on(EVENTS.DRAW, linePayload => {
     const { roomID } = linePayload;
 
     if (rooms[roomID]) {
       // add received line to history
       rooms[roomID].lineHistory.push(linePayload);
       // send line to all clients
-      io.to(roomID).emit('draw', linePayload);
+      io.in(roomID).emit(EVENTS.DRAW, linePayload);
     } else {
-      socket.emit('draw', { error: 'Room does not exist' });
+      socket.emit(EVENTS.DRAW, { error: 'Room does not exist' });
     }
 
-    restartTimer(roomID);
+    _restartTimer(roomID);
   });
 
-  // handler for chat
-  socket.on('chat', messagePayload => {
+  // handle chat
+  socket.on(EVENTS.CHAT, messagePayload => {
     const { roomID } = messagePayload;
 
     if (rooms[roomID]) {
       // add message to history
       rooms[roomID].chatHistory.push(messagePayload);
       // send msg to all clients
-      io.to(roomID).emit('chat', messagePayload);
+      io.in(roomID).emit(EVENTS.CHAT, messagePayload);
     }
 
-    restartTimer(roomID);
+    _restartTimer(roomID);
   });
 
-  // handler for clearing drawing
-  socket.on('clear', roomID => {
+  // handle clear drawing
+  socket.on(EVENTS.CLEAR, roomID => {
     rooms[roomID].lineHistory = [];
-    io.emit('clear', true);
+    io.in(roomID).emit(EVENTS.CLEAR, true);
 
-    restartTimer(roomID);
+    _restartTimer(roomID);
   });
 
   // handler for disconnect
-  socket.on('disconnect', () => {
-    delete connectedUsers[userID];
+  socket.on(EVENTS.DISCONNECT, () => {
+    const { username } = connectedUsers[id];
+    io.emit(EVENTS.LEAVE, username);
+    delete connectedUsers[id];
   });
 });
 
 // return SPA entry point
 app.get('/', (req, res) => {
-  res.sendFile(path.join(BUILD_DIR, 'index.html'), (err) => console.log(err));
-})
+  res.sendFile(path.join(BUILD_DIR, 'index.html'), err => console.log(err));
+});
 
 // error handler
 app.use((err, req, res, next) => {
@@ -120,7 +130,7 @@ app.use((err, req, res, next) => {
     let message = err.message || 'Unknown error';
     res.status(statusCode).send(message);
   }
-})
+});
 
 // start server
 server.listen(PORT, () => console.log(`Server listening on port ${PORT}`));
