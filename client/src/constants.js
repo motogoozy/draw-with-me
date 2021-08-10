@@ -8,6 +8,7 @@ const EVENTS = {
   CHAT: 'chat',
   CLEAR: 'clear',
   UNDO: 'undo', // undo most recent draw
+  ERROR: 'error',
 };
 
 module.exports = {
