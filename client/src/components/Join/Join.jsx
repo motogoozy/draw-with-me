@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Join.scss';
 import { generateID } from '../../utils';
 
@@ -7,6 +7,10 @@ export default function Join() {
   const [showJoin, setShowJoin] = useState(false);
   const [roomID, setRoomID] = useState('');
   const [username, setUsername] = useState('');
+
+  useEffect(() => {
+    setUsername('');
+  }, [showCreate, showJoin]);
 
   const generateRoomID = () => setRoomID(generateID(4));
 
@@ -43,6 +47,7 @@ export default function Join() {
             </button>
             <button
               onClick={() => {
+                setRoomID('');
                 setShowJoin(true);
                 setShowCreate(false);
               }}>
@@ -75,6 +80,7 @@ export default function Join() {
                 value={username}
                 onChange={e => setUsername(e.target.value)}
                 autoFocus={showCreate}
+                maxLength={10}
               />
             </div>
 

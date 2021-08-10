@@ -9,6 +9,8 @@ import { faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
 import { faTrashAlt } from '@fortawesome/free-regular-svg-icons';
 import { EVENTS } from '../../constants.js';
 
+const { JOIN, LEAVE, CLOSE, DRAW, CHAT, CLEAR, UNDO, ERROR } = EVENTS;
+
 export default function Canvas() {
   const socketRef = useRef();
   const brushRef = useRef({ color: '#000000', size: 5 });
@@ -30,7 +32,7 @@ export default function Canvas() {
     setCurrentBrushSize(event.target.value);
   };
 
-  const clearCanvas = () => socketRef.current.emit(EVENTS.CLEAR, roomID);
+  const clearCanvas = () => socketRef.current.emit(CLEAR, roomID);
 
   const sendMessage = message => {
     const messagePayload = {
@@ -39,7 +41,7 @@ export default function Canvas() {
       message,
     };
 
-    socketRef.current.emit(EVENTS.CHAT, messagePayload);
+    socketRef.current.emit(CHAT, messagePayload);
   };
 
   useEffect(() => {
@@ -61,7 +63,7 @@ export default function Canvas() {
 
     // connect to socket, get canvas element, and create context
     socketRef.current = io.connect('/');
-    socketRef.current.emit(EVENTS.JOIN, joinPayload);
+    socketRef.current.emit(JOIN, joinPayload);
     let canvas = document.getElementById('drawing');
     let context = canvas.getContext('2d');
     let width = window.innerWidth;
@@ -99,25 +101,20 @@ export default function Canvas() {
     };
 
     // draw line received from server
-    socketRef.current.on(EVENTS.DRAW, lineData => {
-      if (lineData.error) {
-        console.log(lineData.error);
-        window.location.search = '';
-      } else {
-        const { coordinates, color, size } = lineData;
-        context.strokeStyle = color;
-        context.lineWidth = size;
-        context.lineCap = 'round';
-        context.lineJoin = 'round';
-        context.beginPath();
-        context.moveTo(coordinates[0].x * width, coordinates[0].y * height);
-        context.lineTo(coordinates[1].x * width, coordinates[1].y * height);
-        context.stroke();
-      }
+    socketRef.current.on(DRAW, lineData => {
+      const { coordinates, color, size } = lineData;
+      context.strokeStyle = color;
+      context.lineWidth = size;
+      context.lineCap = 'round';
+      context.lineJoin = 'round';
+      context.beginPath();
+      context.moveTo(coordinates[0].x * width, coordinates[0].y * height);
+      context.lineTo(coordinates[1].x * width, coordinates[1].y * height);
+      context.stroke();
     });
 
     // alert when user joins room
-    socketRef.current.on(EVENTS.JOIN, newUser => {
+    socketRef.current.on(JOIN, newUser => {
       if (newUser.username === username) {
         console.log(`Welcome, ${username}!`);
       } else {
@@ -125,28 +122,38 @@ export default function Canvas() {
       }
     });
 
-    socketRef.current.on(EVENTS.LEAVE, username => {
+    socketRef.current.on(LEAVE, username => {
       console.log(`${username} has left the room`);
     });
 
     // clear canvas
-    socketRef.current.on(EVENTS.CLEAR, () => {
+    socketRef.current.on(CLEAR, () => {
       context.clearRect(0, 0, width, height);
       console.log('canvas cleared');
     });
 
     // receive chat message
-    socketRef.current.on(EVENTS.CHAT, newMessage => {
+    socketRef.current.on(CHAT, newMessage => {
       setMessages(prev => [...prev, newMessage]);
     });
 
     // close room
-    socketRef.current.on(EVENTS.CLOSE, () => {
+    socketRef.current.on(CLOSE, () => {
       console.log('room has been closed');
     });
 
+    // handle errors
+    socketRef.current.on(ERROR, err => {
+      if (err.msg) {
+        console.log(err.msg);
+      }
+      if (err.forceLeave) {
+        window.location.search = '';
+      }
+    });
+
     // TODO: undo last draw
-    socketRef.current.on(EVENTS.UNDO, () => {});
+    socketRef.current.on(UNDO, () => {});
 
     // main loop, running every 25ms
     function main() {
@@ -159,7 +166,7 @@ export default function Canvas() {
           size: brushRef.current.size,
           roomID,
         };
-        socketRef.current.emit(EVENTS.DRAW, lineData);
+        socketRef.current.emit(DRAW, lineData);
         mouse.move = false;
       }
       mouse.prevPosition = { x: mouse.position.x, y: mouse.position.y };
